@@ -31,7 +31,7 @@ defined('MOODLE_INTERNAL') || die();
  *
  * @return boolean
  **/
-function local_cohort_automation_cron () {
+function local_cohort_automation_task () {
 
     global $DB;
 
