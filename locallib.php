@@ -55,14 +55,27 @@ function get_users_not_in_cohort($cohortid, $profilefieldid, $regex) {
 
     $fields = get_profile_fields(false);
 
-    $sql = 'SELECT u.id
-            FROM {user} u
-            WHERE u.id NOT IN (SELECT cm.userid
-                               FROM {cohort_members} cm
-                               WHERE cohortid = ?)
-            AND u.' . $fields[$profilefieldid] . ' ' . $DB->sql_regex(true) . ' ?
-            AND u.deleted <> 1
-            AND u.suspended <> 1';
+    if ($profilefieldid >= 100){
+        $sql = 'SELECT u.id
+                FROM {user} u
+                JOIN {user_info_field} f ON f.shortname = \'' . $fields[$profilefieldid] . '\'
+                JOIN {user_info_data} d ON d.userid = u.id AND d.fieldid = f.id
+                WHERE u.id NOT IN (SELECT cm.userid
+                                   FROM {cohort_members} cm
+                                   WHERE cohortid = ?)
+                AND d.data ' . $DB->sql_regex(true) . ' ?
+                AND u.deleted <> 1
+                AND u.suspended <> 1';
+    } else {
+        $sql = 'SELECT u.id
+                FROM {user} u
+                WHERE u.id NOT IN (SELECT cm.userid
+                                   FROM {cohort_members} cm
+                                   WHERE cohortid = ?)
+                AND u.' . $fields[$profilefieldid] . ' ' . $DB->sql_regex(true) . ' ?
+                AND u.deleted <> 1
+                AND u.suspended <> 1';
+    }
 
     try {
         return $DB->get_recordset_sql($sql, array($cohortid, $regex));
@@ -87,12 +100,23 @@ function get_users_in_cohort($cohortid, $profilefieldid, $regex) {
 
     $fields = get_profile_fields(false);
 
-    $sql = 'SELECT u.id
-            FROM {user} u
-            WHERE u.id IN (SELECT cm.userid
-                               FROM {cohort_members} cm
-                               WHERE cohortid = ?)
-            AND u.' . $fields[$profilefieldid] . ' ' . $DB->sql_regex(true) . ' ?';
+    if ($profilefieldid >= 100){
+        $sql = 'SELECT u.id
+                FROM {user} u
+                JOIN {user_info_field} f ON f.shortname = \'' . $fields[$profilefieldid] . '\'
+                JOIN {user_info_data} d ON d.userid = u.id AND d.fieldid = f.id
+                WHERE u.id IN (SELECT cm.userid
+                                   FROM {cohort_members} cm
+                                   WHERE cohortid = ?)
+                AND d.data ' . $DB->sql_regex(true) . ' ?';
+    } else {
+        $sql = 'SELECT u.id
+                FROM {user} u
+                WHERE u.id IN (SELECT cm.userid
+                                   FROM {cohort_members} cm
+                                   WHERE cohortid = ?)
+                AND u.' . $fields[$profilefieldid] . ' ' . $DB->sql_regex(true) . ' ?';
+    }
 
     try {
         return $DB->get_recordset_sql($sql, array($cohortid, $regex));
@@ -111,6 +135,8 @@ function get_users_in_cohort($cohortid, $profilefieldid, $regex) {
  */
 function get_profile_fields($fordisplay=true) {
 
+    global $DB;
+
     // Define master array.
     /*
      * index:   a unique non repeating index number
@@ -124,6 +150,34 @@ function get_profile_fields($fordisplay=true) {
             'field' => 'username'
            ),
     );
+
+    $c = 2;
+    if ($columns = $DB->get_columns('user')) {
+        sort($columns);
+        $white_list = array('idnumber', 'institution', 'department');
+        foreach ($columns as $column) {
+            if(in_array($column->name, $white_list)) {
+                $master[] = array(
+                    'index'   => $c++,
+                    'display' => get_string($column->name),
+                    'field'   => $column->name,
+                );
+            }
+        }
+    }
+
+    $c = 100;
+
+    if ($fields = $DB->get_records('user_info_field')) {
+        foreach ($fields as $field) {
+                $master[] = array(
+                    'index'   => $c++,
+                    'display' => $field->name,
+                    'field'   => $field->shortname,
+                );
+        }
+    }
+
 
     // Output required array based on master array.
     if ($fordisplay) {
