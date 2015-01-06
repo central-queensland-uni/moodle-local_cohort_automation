@@ -55,7 +55,7 @@ function get_users_not_in_cohort($cohortid, $profilefieldid, $regex) {
 
     $fields = get_profile_fields(false);
 
-    if ($profilefieldid >= 100){
+    if ($profilefieldid >= 100) {
         $sql = 'SELECT u.id
                 FROM {user} u
                 JOIN {user_info_field} f ON f.shortname = \'' . $fields[$profilefieldid] . '\'
@@ -100,7 +100,7 @@ function get_users_in_cohort($cohortid, $profilefieldid, $regex) {
 
     $fields = get_profile_fields(false);
 
-    if ($profilefieldid >= 100){
+    if ($profilefieldid >= 100) {
         $sql = 'SELECT u.id
                 FROM {user} u
                 JOIN {user_info_field} f ON f.shortname = \'' . $fields[$profilefieldid] . '\'
@@ -154,9 +154,9 @@ function get_profile_fields($fordisplay=true) {
     $c = 2;
     if ($columns = $DB->get_columns('user')) {
         sort($columns);
-        $white_list = array('idnumber', 'institution', 'department');
+        $whitelist = array('idnumber', 'institution', 'department');
         foreach ($columns as $column) {
-            if(in_array($column->name, $white_list)) {
+            if (in_array($column->name, $whitelist)) {
                 $master[] = array(
                     'index'   => $c++,
                     'display' => get_string($column->name),
@@ -177,7 +177,6 @@ function get_profile_fields($fordisplay=true) {
                 );
         }
     }
-
 
     // Output required array based on master array.
     if ($fordisplay) {

@@ -26,7 +26,9 @@
 require_once("$CFG->libdir/formslib.php");
 require_once('locallib.php');
 
-// Define a form to collect settings for a new mapping.
+/**
+ * Define a form to collect settings for a new mapping.
+ */
 class mappings_settings_form extends moodleform {
 
     // Define the form.
