@@ -31,7 +31,7 @@ function xmldb_local_cohort_automation_upgrade($oldversion) {
 
     $dbman = $DB->get_manager();
 
-    if ($oldversion <  2015111802) {
+    if ($oldversion < 2015111802) {
 
         $table = new xmldb_table('local_cohort_automation');
         $field = new xmldb_field('fieldshortname', XMLDB_TYPE_CHAR, '255', null, null, null, null, '');
