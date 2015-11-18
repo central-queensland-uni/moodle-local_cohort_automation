@@ -38,26 +38,26 @@ function xmldb_local_cohort_automation_upgrade($oldversion) {
 
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
-        }
 
-        // Map old id's to new shortnames.
-        $oldfields = legacy_get_profile_fields(false);
-        $records = $DB->get_records('local_cohort_automation');
-        foreach ($records as $record) {
-            $record->fieldshortname = $oldfields[$record->profilefieldid];
-            $DB->update_record('local_cohort_automation', $record);
-        }
+            // Map old id's to new shortnames.
+            $oldfields = legacy_get_profile_fields(false);
+            $records = $DB->get_records('local_cohort_automation');
+            foreach ($records as $record) {
+                $record->fieldshortname = $oldfields[$record->profilefieldid];
+                $DB->update_record('local_cohort_automation', $record);
+            }
 
-        // Delete old index and field.
-        $index = new xmldb_index('cohproreg');
-        $index = new xmldb_index('cohortid-profilefieldid-regex', XMLDB_INDEX_UNIQUE, array('cohortid', 'profilefieldid', 'regex'));
-        if ($dbman->index_exists($table, $index)) {
-            $dbman->drop_index($table, $index);
-        }
+            // Delete old index and field.
+            $index = new xmldb_index('cohproreg');
+            $index = new xmldb_index('cohortid-profilefieldid-regex', XMLDB_INDEX_UNIQUE, array('cohortid', 'profilefieldid', 'regex'));
+            if ($dbman->index_exists($table, $index)) {
+                $dbman->drop_index($table, $index);
+            }
 
-        $field = new xmldb_field('profilefieldid');
-        if ($dbman->field_exists($table, $field)) {
-            $dbman->drop_field($table, $field);
+            $field = new xmldb_field('profilefieldid');
+            if ($dbman->field_exists($table, $field)) {
+                $dbman->drop_field($table, $field);
+            }
         }
     }
 
