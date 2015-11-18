@@ -32,11 +32,15 @@ defined('MOODLE_INTERNAL') || die();
 function get_cohort_mappings() {
     global $DB;
 
-    return $DB->get_records_sql(
-        'SELECT a.id, a.cohortid, b.name, a.regex, a.profilefieldid
-         FROM {local_cohort_automation} a, {cohort} b
-         WHERE a.cohortid = b.id
-         ORDER BY b.name'
+    return $DB->get_records_sql("
+         SELECT a.id,
+                a.cohortid,
+                c.name,
+                a.regex,
+                a.fieldshortname
+           FROM {local_cohort_automation} a
+           JOIN {cohort} c ON c.id =  a.cohortid
+       ORDER BY c.name"
     );
 }
 
@@ -51,33 +55,35 @@ function get_cohort_mappings() {
  *
  * @return recordset of users not in the cohort
  */
-function get_users_not_in_cohort($cohortid, $profilefieldid, $regex, $test = true) {
+function get_users_not_in_cohort($cohortid, $profilefield, $regex, $test = true) {
     global $DB;
 
-    $not = $test ? ' NOT' : '';
+    $not = $test ? 'NOT' : '';
 
-    $fields = get_profile_fields(false);
+    $fields = local_cohort_automation_get_profile_fields();
 
-    if ($profilefieldid >= 100) {
-        $sql = 'SELECT u.id
-                FROM {user} u
-                JOIN {user_info_field} f ON f.shortname = \'' . $fields[$profilefieldid] . '\'
-                JOIN {user_info_data} d ON d.userid = u.id AND d.fieldid = f.id
-                WHERE u.id ' . $not . ' IN (SELECT cm.userid
-                                   FROM {cohort_members} cm
-                                   WHERE cohortid = ?)
-                AND d.data ' . $DB->sql_regex($test) . ' ?
-                AND u.deleted <> 1
-                AND u.suspended <> 1';
+    $columns = array('username', 'idnumber', 'institution', 'department');
+
+    if (!in_array($profilefield, $columns)) {
+        $sql = "SELECT u.id
+                  FROM {user} u
+                  JOIN {user_info_field} f ON f.shortname = '$profilefield'
+                  JOIN {user_info_data} d ON d.userid = u.id AND d.fieldid = f.id
+                 WHERE u.id $not IN (SELECT cm.userid
+                                       FROM {cohort_members} cm
+                                      WHERE cohortid = ?)
+                   AND d.data " . $DB->sql_regex($test) . " ?
+                   AND u.deleted <> 1
+                   AND u.suspended <> 1";
     } else {
-        $sql = 'SELECT u.id
-                FROM {user} u
-                WHERE u.id ' . $not . ' IN (SELECT cm.userid
-                                   FROM {cohort_members} cm
-                                   WHERE cohortid = ?)
-                AND u.' . $fields[$profilefieldid] . ' ' . $DB->sql_regex($test) . ' ?
-                AND u.deleted <> 1
-                AND u.suspended <> 1';
+        $sql = "SELECT u.id
+                  FROM {user} u
+                 WHERE u.id $not IN (SELECT cm.userid
+                                       FROM {cohort_members} cm
+                                      WHERE cohortid = ?)
+                   AND u.$profilefield " . $DB->sql_regex($test) . " ?
+                   AND u.deleted <> 1
+                   AND u.suspended <> 1";
     }
 
     try {
@@ -95,30 +101,30 @@ function get_users_not_in_cohort($cohortid, $profilefieldid, $regex, $test = tru
  * @param $cohortid the id number of cohorot
  * @param $profilefieldid the id number of the profile field
  * @param $regex the regex to apply to the username
- * 
+ *
  * @return recordset of users in the cohort
  */
-function get_users_in_cohort($cohortid, $profilefieldid, $regex) {
+function get_users_in_cohort($cohortid, $profilefield, $regex) {
     global $DB;
 
-    $fields = get_profile_fields(false);
+    $columns = array('username', 'idnumber', 'institution', 'department');
 
-    if ($profilefieldid >= 100) {
+    if (!in_array($profilefield, $columns)) {
         $sql = 'SELECT u.id
-                FROM {user} u
-                JOIN {user_info_field} f ON f.shortname = \'' . $fields[$profilefieldid] . '\'
-                JOIN {user_info_data} d ON d.userid = u.id AND d.fieldid = f.id
-                WHERE u.id IN (SELECT cm.userid
-                                   FROM {cohort_members} cm
-                                   WHERE cohortid = ?)
-                AND d.data ' . $DB->sql_regex(true) . ' ?';
+                  FROM {user} u
+                  JOIN {user_info_field} f ON f.shortname = \'' . $profilefield . '\'
+                  JOIN {user_info_data} d ON d.userid = u.id AND d.fieldid = f.id
+                 WHERE u.id IN (SELECT cm.userid
+                                  FROM {cohort_members} cm
+                                 WHERE cohortid = ?)
+                  AND d.data ' . $DB->sql_regex(true) . ' ?';
     } else {
         $sql = 'SELECT u.id
-                FROM {user} u
-                WHERE u.id IN (SELECT cm.userid
-                                   FROM {cohort_members} cm
-                                   WHERE cohortid = ?)
-                AND u.' . $fields[$profilefieldid] . ' ' . $DB->sql_regex(true) . ' ?';
+                  FROM {user} u
+                 WHERE u.id IN (SELECT cm.userid
+                                  FROM {cohort_members} cm
+                                 WHERE cohortid = ?)
+                   AND u.' . $profilefield . ' ' . $DB->sql_regex(true) . ' ?';
     }
 
     try {
@@ -132,11 +138,14 @@ function get_users_in_cohort($cohortid, $profilefieldid, $regex) {
 /**
  * retrieve a list of profile fields that can be matched against
  *
+ * THIS FUNCTION IS DEPRECATED. It is only still present to allow
+ * clean migration in the upgrade script.
+ *
  * @param $fordisplay generate the list of fields for display
  *
  * @return array of possible profile fields
  */
-function get_profile_fields($fordisplay=true) {
+function legacy_get_profile_fields($fordisplay=true) {
 
     global $DB;
 

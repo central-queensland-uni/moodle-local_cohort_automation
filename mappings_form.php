@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
  * Defines the settings form of local_cohort_automation
  *
@@ -31,7 +30,9 @@ require_once('locallib.php');
  */
 class mappings_settings_form extends moodleform {
 
-    // Define the form.
+    /**
+     * Form definition.
+     */
     public function definition() {
         global $DB;
 
@@ -80,12 +81,11 @@ class mappings_settings_form extends moodleform {
         $mform->addRule('cohortid', get_string('required'), 'nonzero', null, 'client');
         $mform->setType('cohortid', PARAM_INT);
 
-        $mform->addElement('select', 'profilefieldid',
-            get_string('profilefieldid', 'local_cohort_automation'), get_profile_fields());
-        $mform->addHelpButton('profilefieldid', 'profilefieldidhelp', 'local_cohort_automation');
-        $mform->addRule('profilefieldid', get_string('required'), 'required', null, 'client');
-        $mform->addRule('profilefieldid', get_string('required'), 'nonzero', null, 'client');
-        $mform->setType('profilefieldid', PARAM_INT);
+        $mform->addElement('select', 'fieldshortname',
+            get_string('fieldshortname', 'local_cohort_automation'), local_cohort_automation_get_profile_fields());
+        $mform->addHelpButton('fieldshortname', 'fieldshortnamehelp', 'local_cohort_automation');
+        $mform->addRule('fieldshortname', get_string('required'), 'required', null, 'client');
+        $mform->setType('fieldshortname', PARAM_TEXT);
 
         $mform->addElement('text', 'regex', get_string('regex', 'local_cohort_automation'));
         $mform->addHelpButton('regex', 'regexhelp', 'local_cohort_automation');

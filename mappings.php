@@ -49,11 +49,12 @@ if ($action == 'add') {
     $record = new stdClass();
     $record->id = optional_param('id', null, PARAM_INT);
     $record->cohortid   = required_param('cohortid', PARAM_INT);
-    $record->profilefieldid = required_param('profilefieldid', PARAM_INT);
+    $record->fieldshortname = required_param('fieldshortname', PARAM_TEXT);
     $record->regex = required_param('regex', PARAM_TEXT);
 
     // Stop whitespace inadvertantly making regex fail.
     $record->regex = trim($record->regex);
+
 
     try {
         if (empty($record->id)) {
@@ -70,40 +71,28 @@ if ($action == 'add') {
 }
 
 if ($action == 'delete') {
+
     // Delete a mapping.
-
     require_sesskey();
+    $id = required_param('id', PARAM_INT);
 
-    $mappingid = required_param('id', PARAM_INT);
-
-    try {
-        // Get the details of this mapping.
-        $mappingdetails = $DB->get_records('local_cohort_automation', array('id' => $mappingid));
-
-        if (count($mappingdetails) > 0) {
-            $mapping = array_shift($mappingdetails);
-        } else {
-            $error = get_string('recordnotfound', 'local_cohort_automation');
-        }
-    } catch (Exception $e) {
-        $error = get_string('recordnotfound', 'local_cohort_automation');
-    }
+    $mapping = $DB->get_record('local_cohort_automation', array('id' => $id));
 
     // Use the mapping if it was found.
-    if (isset($mapping)) {
+    if ($mapping) {
         try {
 
-            $users = get_users_in_cohort($mapping->cohortid, $mapping->profilefieldid, $mapping->regex);
+            $users = get_users_in_cohort($mapping->cohortid, $mapping->fieldshortname, $mapping->regex);
 
             // Remove the users from the cohort..
-            require_once(dirname(__FILE__) . '/../../cohort/lib.php');
+            require_once("$CFG->dirroot/cohort/lib.php");
 
             foreach ($users as $user) {
                 cohort_remove_member($mapping->cohortid, $user->id);
             }
 
             // Delete the mapping record itself.
-            $DB->delete_records('local_cohort_automation', array('id' => $mappingid));
+            $DB->delete_records('local_cohort_automation', array('id' => $id));
 
             redirect(new moodle_url('/local/cohort_automation/mappings.php'));
         } catch (Exception $e) {
@@ -138,13 +127,14 @@ $table = new html_table();
 $table->head = array(
     get_string('cohorttable', 'local_cohort_automation'),
     get_string('membercounttable', 'local_cohort_automation'),
-    get_string('profilefieldtable', 'local_cohort_automation'),
+    get_string('fieldname', 'local_cohort_automation'),
+    get_string('fieldlabel', 'local_cohort_automation'),
     get_string('regextable', 'local_cohort_automation'),
     get_string('actions', 'local_cohort_automation')
 );
 
 $records = get_cohort_mappings();
-$profilefields = get_profile_fields();
+$profilefields = local_cohort_automation_get_profile_fields();
 
 if (count($records) > 0) {
 
@@ -160,7 +150,8 @@ if (count($records) > 0) {
                 )),
                 $DB->count_records('cohort_members', array('cohortid' => $record->cohortid))
             ),
-            $profilefields[$record->profilefieldid],
+            $record->fieldshortname,
+            $profilefields[$record->fieldshortname],
             $record->regex,
             $OUTPUT->action_link(
                 new moodle_url( '/local/cohort_automation/mappings.php', array(

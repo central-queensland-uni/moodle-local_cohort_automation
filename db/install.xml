@@ -7,16 +7,13 @@
     <TABLE NAME="local_cohort_automation" COMMENT="Store mappings between cohorts and the criteria for adding users">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="profilefieldid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="id number of the profile field used in the match"/>
         <FIELD NAME="cohortid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="id number of the cohort that users will be added to"/>
         <FIELD NAME="regex" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="regular expression used in the match"/>
+        <FIELD NAME="fieldshortname" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="null" SEQUENCE="false" COMMENT="short name for each field"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
-      <INDEXES>
-        <INDEX NAME="cohortid-profilefieldid-regex" UNIQUE="true" FIELDS="cohortid, profilefieldid, regex" COMMENT="Ensure unique records"/>
-      </INDEXES>
     </TABLE>
   </TABLES>
 </XMLDB>

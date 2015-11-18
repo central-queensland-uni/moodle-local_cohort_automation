@@ -52,7 +52,7 @@ function local_cohort_automation_task () {
         // Loop through each mapping.
         foreach ($mappings as $mapping) {
 
-            $userrecords = get_users_not_in_cohort($mapping->cohortid, $mapping->profilefieldid, $mapping->regex);
+            $userrecords = get_users_not_in_cohort($mapping->cohortid, $mapping->fieldshortname, $mapping->regex);
 
             if ($userrecords->valid()) {
                 $count = 0;
@@ -70,7 +70,7 @@ function local_cohort_automation_task () {
 
             $userrecords->close();
 
-            $userrecords = get_users_not_in_cohort($mapping->cohortid, $mapping->profilefieldid, $mapping->regex, false);
+            $userrecords = get_users_not_in_cohort($mapping->cohortid, $mapping->fieldshortname, $mapping->regex, false);
 
             if ($userrecords->valid()) {
                 $count = 0;
@@ -109,4 +109,28 @@ function local_cohort_automation_event_delete($eventdata) {
 
     return true;
 
+}
+
+/**
+ * List valid fields to be matched on
+ *
+ * @return array the  list of profile fields
+ */
+function local_cohort_automation_get_profile_fields() {
+    global $DB;
+
+    $fields = array();
+    $columns = array('username', 'idnumber', 'institution', 'department');
+
+    foreach ($columns as $column) {
+        $fields[$column] = get_string($column);
+    }
+
+    if ($customfields = $DB->get_records('user_info_field', array(), 'sortorder ASC' )) {
+        foreach ($customfields as $customfield) {
+            $fields[$customfield->shortname] = $customfield->name;
+        }
+    }
+
+    return $fields;
 }

@@ -34,9 +34,9 @@ $string['cohortid'] = 'Cohort';
 $string['cohortidhelp'] = 'Select a Cohort';
 $string['cohortidhelp_help'] = 'Select a Cohort that user should be added to if their username matches the specified pattern below';
 
-$string['profilefieldid'] = 'User Profile Field';
-$string['profilefieldidhelp'] = 'Select a User Profile Field';
-$string['profilefieldidhelp_help'] = 'Select a Profile field that will be matched against using the pattern specified below';
+$string['fieldshortname'] = 'User Profile Field';
+$string['fieldshortnamehelp'] = 'Select a User Profile Field';
+$string['fieldshortnamehelp_help'] = 'Select a Profile field that will be matched against using the pattern specified below';
 
 $string['regex'] = 'Regular Expression';
 $string['regexhelp'] = 'Enter a Regular Expression';
@@ -52,7 +52,8 @@ $string['recordnotfound'] = 'A mapping matching the specified id does not exist'
 $string['errorremovemembers'] = 'An error occured while deleting the cohort members';
 
 $string['cohorttable'] = 'Cohort Name';
-$string['profilefieldtable'] = 'Profile Field';
+$string['fieldname'] = 'Field name';
+$string['fieldlabel'] = 'Field label';
 $string['membercounttable'] = 'Cohort Size';
 $string['regextable']  = 'Regular Expression';
 $string['actions'] = 'Actions';

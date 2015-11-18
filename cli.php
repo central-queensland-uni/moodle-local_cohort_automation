@@ -18,7 +18,7 @@
 /**
  * cohort_automation cli
  *
- * @package    local_auto_cohort_maint
+ * @package    local_cohort_automation
  * @copyright  2014 NetSpot Pty Ltd
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

@@ -21,13 +21,13 @@
  * This code fragment is called by moodle_needs_upgrading() and
  * /admin/index.php
  *
- * @package    local_auto_cohort_maint
+ * @package    local_cohort_automation
  * @copyright  2014 NetSpot Pty Ltd
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2015111801;      // The current module version (Date: YYYYMMDDXX).
+$plugin->version   = 2015111802;      // The current module version (Date: YYYYMMDDXX).
 $plugin->requires  = 2013051400;      // Requires this Moodle version.
 
