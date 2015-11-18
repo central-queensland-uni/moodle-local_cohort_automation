@@ -154,7 +154,12 @@ if (count($records) > 0) {
 
         $mappings[] = array(
             $record->name,
-            $DB->count_records('cohort_members', array('cohortid' => $record->cohortid)),
+            $OUTPUT->action_link(
+                new moodle_url( '/cohort/assign.php', array(
+                    'id' => $record->cohortid,
+                )),
+                $DB->count_records('cohort_members', array('cohortid' => $record->cohortid))
+            ),
             $profilefields[$record->profilefieldid],
             $record->regex,
             $OUTPUT->action_link(
