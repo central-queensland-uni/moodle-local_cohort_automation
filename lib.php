@@ -65,7 +65,25 @@ function local_cohort_automation_task () {
                 }
 
                 // Output some useful info.
-                mtrace('Found ' . $count . ' records that were updated for mapping ' . $mapping->id);
+                mtrace('Found ' . $count . ' records that were added to mapping ' . $mapping->id);
+            }
+
+            $userrecords->close();
+
+            $userrecords = get_users_not_in_cohort($mapping->cohortid, $mapping->profilefieldid, $mapping->regex, false);
+
+            if ($userrecords->valid()) {
+                $count = 0;
+
+                // Users were found that need to be added to the cohort.
+                foreach ($userrecords as $userrecord) {
+                    // Add the user to the cohort.
+                    cohort_remove_member($mapping->cohortid, $userrecord->id);
+                    $count++;
+                }
+
+                // Output some useful info.
+                mtrace('Found ' . $count . ' records that were removed from mapping ' . $mapping->id);
             }
 
             $userrecords->close();

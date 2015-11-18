@@ -47,11 +47,14 @@ function get_cohort_mappings() {
  * @param $cohortid the id number of the cohort
  * @param $profilefieldid the id number of the profile field
  * @param $regex the regex to apply to the username
+ * @param $test If false shows a list of user to be removed
  *
  * @return recordset of users not in the cohort
  */
-function get_users_not_in_cohort($cohortid, $profilefieldid, $regex) {
+function get_users_not_in_cohort($cohortid, $profilefieldid, $regex, $test = true) {
     global $DB;
+
+    $not = $test ? ' NOT' : '';
 
     $fields = get_profile_fields(false);
 
@@ -60,19 +63,19 @@ function get_users_not_in_cohort($cohortid, $profilefieldid, $regex) {
                 FROM {user} u
                 JOIN {user_info_field} f ON f.shortname = \'' . $fields[$profilefieldid] . '\'
                 JOIN {user_info_data} d ON d.userid = u.id AND d.fieldid = f.id
-                WHERE u.id NOT IN (SELECT cm.userid
+                WHERE u.id ' . $not . ' IN (SELECT cm.userid
                                    FROM {cohort_members} cm
                                    WHERE cohortid = ?)
-                AND d.data ' . $DB->sql_regex(true) . ' ?
+                AND d.data ' . $DB->sql_regex($test) . ' ?
                 AND u.deleted <> 1
                 AND u.suspended <> 1';
     } else {
         $sql = 'SELECT u.id
                 FROM {user} u
-                WHERE u.id NOT IN (SELECT cm.userid
+                WHERE u.id ' . $not . ' IN (SELECT cm.userid
                                    FROM {cohort_members} cm
                                    WHERE cohortid = ?)
-                AND u.' . $fields[$profilefieldid] . ' ' . $DB->sql_regex(true) . ' ?
+                AND u.' . $fields[$profilefieldid] . ' ' . $DB->sql_regex($test) . ' ?
                 AND u.deleted <> 1
                 AND u.suspended <> 1';
     }
