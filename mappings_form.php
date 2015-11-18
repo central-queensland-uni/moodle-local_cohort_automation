@@ -45,12 +45,12 @@ class mappings_settings_form extends moodleform {
                 . html_writer::end_span());
         }
 
-        // Only try to show the form if regular expressions...
-        // Ore supported by the database.
+        // Only try to show the form if regular expressions
+        // are supported by the database.
         if (!$DB->sql_regex_supported()) {
             $mform->addElement('html',
                 html_writer::start_span('error')
-                . get_String('regexnotsupported', 'local_cohort_automation')
+                . get_string('regexnotsupported', 'local_cohort_automation')
                 . html_writer::end_span());
             return;
         }
@@ -81,7 +81,7 @@ class mappings_settings_form extends moodleform {
         $mform->setType('cohortid', PARAM_INT);
 
         $mform->addElement('select', 'profilefieldid',
-            get_String('profilefieldid', 'local_cohort_automation'), get_profile_fields());
+            get_string('profilefieldid', 'local_cohort_automation'), get_profile_fields());
         $mform->addHelpButton('profilefieldid', 'profilefieldidhelp', 'local_cohort_automation');
         $mform->addRule('profilefieldid', get_string('required'), 'required', null, 'client');
         $mform->addRule('profilefieldid', get_string('required'), 'nonzero', null, 'client');
@@ -94,6 +94,9 @@ class mappings_settings_form extends moodleform {
 
         $mform->addElement('hidden', 'action', 'add');
         $mform->setType('action', PARAM_ALPHANUMEXT);
+
+        $mform->addElement('hidden', 'id');
+        $mform->setType('id', PARAM_INT);
 
         $mform->addElement('submit', 'submitbutton', get_string('savechanges'));
     }

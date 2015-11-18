@@ -55,8 +55,8 @@ $string['cohorttable'] = 'Cohort Name';
 $string['profilefieldtable'] = 'Profile Field';
 $string['membercounttable'] = 'Cohort Size';
 $string['regextable']  = 'Regular Expression';
-$string['deletetable'] = 'Delete';
-$string['deletelink'] = 'Delete Mapping';
-
+$string['actions'] = 'Actions';
+$string['deletelink'] = 'Delete';
+$string['editlink'] = 'Edit';
 
 $string['save'] = 'Save';

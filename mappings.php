@@ -47,6 +47,7 @@ if ($action == 'add') {
     require_sesskey();
 
     $record = new stdClass();
+    $record->id = optional_param('id', null, PARAM_INT);
     $record->cohortid   = required_param('cohortid', PARAM_INT);
     $record->profilefieldid = required_param('profilefieldid', PARAM_INT);
     $record->regex = required_param('regex', PARAM_TEXT);
@@ -55,7 +56,11 @@ if ($action == 'add') {
     $record->regex = trim($record->regex);
 
     try {
-        $DB->insert_record('local_cohort_automation', $record);
+        if (empty($record->id)) {
+            $DB->insert_record('local_cohort_automation', $record);
+        } else {
+            $DB->update_record('local_cohort_automation', $record);
+        }
 
         redirect(new moodle_url('/local/cohort_automation/mappings.php'));
     } catch (Exception $e) {
@@ -107,6 +112,13 @@ if ($action == 'delete') {
     }
 }
 
+$cohort = null;
+
+if ($action == 'edit') {
+    require_sesskey();
+    $id   = required_param('id', PARAM_INT);
+    $cohort = (array)$DB->get_record('local_cohort_automation', array('id' => $id));
+}
 
 // Output the page header.
 echo $OUTPUT->header();
@@ -116,6 +128,7 @@ echo $OUTPUT->heading(get_string('newmappingheader', 'local_cohort_automation'),
 // Output the new mapping form.
 $settingsform = new mappings_settings_form(null, array('error' => $error));
 
+$settingsform->set_data($cohort);
 $settingsform->display();
 
 // List all existing mappings.
@@ -124,10 +137,10 @@ echo $OUTPUT->heading(get_string('existingmappingheader', 'local_cohort_automati
 $table = new html_table();
 $table->head = array(
     get_string('cohorttable', 'local_cohort_automation'),
-    get_string('profilefieldtable', 'local_cohort_automation'),
     get_string('membercounttable', 'local_cohort_automation'),
+    get_string('profilefieldtable', 'local_cohort_automation'),
     get_string('regextable', 'local_cohort_automation'),
-    get_string('deletetable', 'local_cohort_automation')
+    get_string('actions', 'local_cohort_automation')
 );
 
 $records = get_cohort_mappings();
@@ -135,30 +148,34 @@ $profilefields = get_profile_fields();
 
 if (count($records) > 0) {
 
-    $linktext = get_string('deletelink', 'local_cohort_automation');
-
     $mappings = array();
 
     foreach ($records as $record) {
-        $linkurl = new moodle_url(
-            '/local/cohort_automation/mappings.php',
-            array(
-                'action' => 'delete',
-                'id' => $record->id,
-                'sesskey' => sesskey()
+
+        $mappings[] = array(
+            $record->name,
+            $DB->count_records('cohort_members', array('cohortid' => $record->cohortid)),
+            $profilefields[$record->profilefieldid],
+            $record->regex,
+            $OUTPUT->action_link(
+                new moodle_url( '/local/cohort_automation/mappings.php', array(
+                    'action' => 'edit',
+                    'id' => $record->id,
+                    'sesskey' => sesskey(),
+                )),
+                get_string('editlink', 'local_cohort_automation')
+            )
+            . ' | ' .
+            $OUTPUT->action_link(
+                new moodle_url( '/local/cohort_automation/mappings.php', array(
+                    'action' => 'delete',
+                    'id' => $record->id,
+                    'sesskey' => sesskey(),
+                )),
+                get_string('deletelink', 'local_cohort_automation')
             )
         );
 
-        $mappings[] = array(
-             $record->name,
-             $profilefields[$record->profilefieldid],
-             $DB->count_records('cohort_members', array('cohortid' => $record->cohortid)),
-             $record->regex,
-             $OUTPUT->action_link(
-                 $linkurl,
-                 $linktext
-             )
-         );
     }
 
     $table->data = $mappings;
